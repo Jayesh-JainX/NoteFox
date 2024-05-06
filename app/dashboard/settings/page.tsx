@@ -18,13 +18,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import prisma from "@/app/lib/db";
-
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+
 import { SubmitButton } from "@/app/components/Submitbuttons";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 
 async function getData(userId: string) {
-  return prisma.user.findUnique({
+  noStore();
+  const data = await prisma.user.findUnique({
     where: {
       id: userId,
     },
@@ -34,22 +35,21 @@ async function getData(userId: string) {
       colorScheme: true,
     },
   });
+
+  return data;
 }
 
 export default async function SettingPage() {
-  const { getUser } = await getKindeServerSession();
+  const { getUser } = getKindeServerSession();
   const user = await getUser();
-
-  if (!user) {
-    return <div>User not found</div>;
-  }
-
-  const data = await getData(user.id);
+  const data = await getData(user?.id as string);
 
   async function postData(formData: FormData) {
     "use server";
+
     const name = formData.get("name") as string;
     const colorScheme = formData.get("color") as string;
+
     await prisma.user.update({
       where: {
         id: user?.id,
@@ -68,7 +68,7 @@ export default async function SettingPage() {
       <div className="flex items-center justify-between px-2">
         <div className="grid gap-1">
           <h1 className="text-3xl md:text-4xl">Settings</h1>
-          <p className="text-lg text-muted-foreground">Your Profile Settings</p>
+          <p className="text-lg text-muted-foreground">Your Profile settings</p>
         </div>
       </div>
 
@@ -77,25 +77,23 @@ export default async function SettingPage() {
           <CardHeader>
             <CardTitle>General Data</CardTitle>
             <CardDescription>
-              Please provide general information about yourself. Don't forget to
-              save your changes.
+              Please provide general information about yourself. Please dont
+              forget to save
             </CardDescription>
           </CardHeader>
-
           <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
+            <div className="space-y-2">
+              <div className="space-y-1">
                 <Label>Your Name</Label>
                 <Input
                   name="name"
                   type="text"
                   id="name"
                   placeholder="Your Name"
-                  defaultValue={data?.name ?? ""}
+                  defaultValue={data?.name ?? undefined}
                 />
               </div>
-
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Label>Your Email</Label>
                 <Input
                   name="email"
@@ -103,14 +101,14 @@ export default async function SettingPage() {
                   id="email"
                   placeholder="Your Email"
                   disabled
-                  defaultValue={data?.email ?? ""}
+                  defaultValue={data?.email as string}
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <Label>Color Scheme</Label>
-                <Select name="color" defaultValue={data?.colorScheme ?? ""}>
-                  <SelectTrigger>
+                <Select name="color" defaultValue={data?.colorScheme}>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a color" />
                   </SelectTrigger>
                   <SelectContent>
@@ -129,6 +127,7 @@ export default async function SettingPage() {
               </div>
             </div>
           </CardContent>
+
           <CardFooter>
             <SubmitButton />
           </CardFooter>
