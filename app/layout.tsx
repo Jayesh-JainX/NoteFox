@@ -5,7 +5,7 @@ import { ThemeProvider } from "./components/theme-provider";
 import { Navbar } from "./components/Navbar";
 import prisma from "./lib/db";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { Analytics } from "@vercel/analytics/react";
+import AnalyticsWrapper from "./components/AnalyticsWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -132,15 +132,7 @@ export default async function RootLayout({
         >
           <Navbar />
           {children}
-          <Analytics
-            beforeSend={(event) => {
-              event.url = event.url.replace(
-                /\/dashboard\/new\/[a-f0-9-]+/gi,
-                "/dashboard/new/"
-              );
-              return event;
-            }}
-          />
+          <AnalyticsWrapper />
         </ThemeProvider>
       </body>
     </html>
