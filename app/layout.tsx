@@ -1,4 +1,3 @@
-"use client";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -135,13 +134,10 @@ export default async function RootLayout({
           {children}
           <Analytics
             beforeSend={(event) => {
-              const dashboardNewKeyPattern =
-                /^\/dashboard\/new\/[a-zA-Z0-9-]+$/;
-
-              if (dashboardNewKeyPattern.test(event.url)) {
-                return null;
-              }
-
+              event.url = event.url.replace(
+                /\/dashboard\/new\/[a-f0-9-]+/gi,
+                "/dashboard/new/"
+              );
               return event;
             }}
           />
