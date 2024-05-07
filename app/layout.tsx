@@ -49,7 +49,7 @@ export const metadata: Metadata = {
   ],
   robots: "index,follow",
   icons: {
-    icon: "./icon.ico",
+    icon: "icon.ico",
   },
 };
 
