@@ -83,7 +83,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {data === null || data?.Notes?.length === 0 ? (
+      {data?.Notes?.length === 0 ? (
         <div className="flex min-h-[400px] flex-col items-center justify-center rounded-md border border-dashed p-8 text-center animate-in fade-in-50">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
             <File className="w-10 h-10 text-primary" />
