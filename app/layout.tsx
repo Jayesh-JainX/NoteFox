@@ -132,7 +132,18 @@ export default async function RootLayout({
         >
           <Navbar />
           {children}
-          <Analytics />
+          <Analytics
+            beforeSend={(event) => {
+              const dashboardNewKeyPattern =
+                /^\/dashboard\/new\/[a-zA-Z0-9-]+$/;
+
+              if (dashboardNewKeyPattern.test(event.url)) {
+                return null;
+              }
+
+              return event;
+            }}
+          />
         </ThemeProvider>
       </body>
     </html>
