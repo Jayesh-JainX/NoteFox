@@ -18,22 +18,18 @@ import { redirect } from "next/navigation";
 import { unstable_noStore as noStore } from "next/cache";
 
 async function getData({ userId }: { userId: string }) {
-  // Ensure that the function is set to fetch fresh data
   noStore();
 
-  // Use Prisma to query the User data and associated information
   const data = await prisma.user.findUnique({
     where: {
       id: userId,
     },
     select: {
-      // Select the User's Subscription status
       Subscription: {
         select: {
           status: true,
         },
       },
-      // Select the count of notes the User has
       Notes: {
         select: {
           id: true,
