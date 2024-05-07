@@ -90,11 +90,11 @@ export default async function DashboardPage() {
           </div>
 
           <h2 className="mt-6 text-xl font-semibold">
-            You dont have any notes created
+            You don&apos;t have any notes created
           </h2>
           <p className="mb-8 mt-2 text-center text-sm leading-6 text-muted-foreground max-w-sm mx-auto">
-            You currently dont have any notes. please create some so that you
-            can see them right here.
+            You currently don&apos;t have any notes. Please create some to see
+            them here.
           </p>
 
           <Button asChild>
