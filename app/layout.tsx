@@ -6,6 +6,7 @@ import { Navbar } from "./components/Navbar";
 import prisma from "./lib/db";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import "../public/icon.ico";
+import "../public/image.jpeg";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -78,26 +79,23 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="icon.ico" type="image/x-icon" />
+        <link rel="icon" href="/icon.ico" type="image/x-icon" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/icon.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/icon.png" />
         <meta name="author" content="Jayesh Jain" />
         <meta property="og:title" content="Note Fox" />
         <meta
           property="og:description"
           content="SaaS for Note - Enhance your note-taking experience with Note Fox"
         />
-        <meta
-          property="og:image"
-          content="https://png.pngtree.com/png-clipart/20190516/original/pngtree-check-mark-icon-png-image_3566317.jpg"
-        />
+        <meta property="og:image" content="/image.jpeg" />
         <meta name="twitter:title" content="Note Fox" />
         <meta
           name="twitter:description"
           content="SaaS for Note - Enhance your note-taking experience with Note Fox"
         />
-        <meta
-          name="twitter:image"
-          content="https://png.pngtree.com/png-clipart/20190516/original/pngtree-check-mark-icon-png-image_3566317.jpg"
-        />
+        <meta name="twitter:image" content="/image.jpeg" />
       </head>
       <body
         className={`${inter.className} ${data?.colorScheme ?? "theme-blue"} `}
