@@ -57,24 +57,30 @@ export default async function DashboardPage() {
     revalidatePath("/dasboard");
   }
   return (
-    <div className="grid items-start gap-y-8">
-      <div className="flex items-center justify-between px-2">
-        <div className="grid gap-1">
-          <h1 className="text-3xl md:text-4xl">Your Notes</h1>
-          <p className="text-lg text-muted-foreground">
+    <div className="grid gap-y-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-2 space-y-4 sm:space-y-0">
+        <div className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl">Your Notes</h1>
+          <p className="text-md sm:text-lg text-muted-foreground">
             Manage and create new notes here.
           </p>
         </div>
 
-        {data?.Subscription?.status === "active" ? (
-          <Button asChild>
-            <Link href="/dashboard/new">Create a new Note</Link>
-          </Button>
-        ) : (
-          <Button asChild>
-            <Link href="/dashboard/billing">Create a new Note</Link>
-          </Button>
-        )}
+        <div className="sm:ml-4">
+          {data?.Subscription?.status === "active" ? (
+            <Button asChild>
+              <Link href="/dashboard/new">Create a new Note</Link>
+            </Button>
+          ) : data?.Notes?.length === 10 ? (
+            <Button asChild>
+              <Link href="/dashboard/billing">Create a new Note</Link>
+            </Button>
+          ) : (
+            <Button asChild>
+              <Link href="/dashboard/new">Create a new Note</Link>
+            </Button>
+          )}
+        </div>
       </div>
 
       {data?.Notes.length === 0 ? (
@@ -91,15 +97,9 @@ export default async function DashboardPage() {
             can see them right here.
           </p>
 
-          {data?.Subscription?.status === "active" ? (
-            <Button asChild>
-              <Link href="/dashboard/new">Create a new Note</Link>
-            </Button>
-          ) : (
-            <Button asChild>
-              <Link href="/dashboard/billing">Create a new Note</Link>
-            </Button>
-          )}
+          <Button asChild>
+            <Link href="/dashboard/new">Create a new Note</Link>
+          </Button>
         </div>
       ) : (
         <div className="flex flex-col gap-y-4">
@@ -121,7 +121,7 @@ export default async function DashboardPage() {
 
               <div className="flex gap-x-4">
                 <Link href={`/dashboard/new/${item.id}`}>
-                  <Button variant="outline" size="icon">
+                  <Button variant="outline" size="icon" aria-label="Edit note">
                     <Edit className="w-4 h-4" />
                   </Button>
                 </Link>
