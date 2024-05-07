@@ -72,9 +72,7 @@ export default async function DynamicRoute({
       <form action={postData}>
         <CardHeader>
           <CardTitle>Edit Note</CardTitle>
-          <CardDescription>
-            Right here you can now edit your notes
-          </CardDescription>
+          <CardDescription>Edit your notes here.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-y-5">
           <div className="gap-y-2 flex flex-col">
