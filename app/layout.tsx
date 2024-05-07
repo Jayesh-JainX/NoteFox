@@ -78,23 +78,47 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="/icon.ico" type="image/x-icon" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/icon.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/icon.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/icon.png" />
+        <link
+          rel="icon"
+          href="https://notefox.vercel.app/icon.ico"
+          type="image/x-icon"
+        />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="https://notefox.vercel.app/icon.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="https://notefox.vercel.app/icon.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="https://notefox.vercel.app/icon.png"
+        />
         <meta name="author" content="Jayesh Jain" />
         <meta property="og:title" content="Note Fox" />
         <meta
           property="og:description"
           content="SaaS for Note - Enhance your note-taking experience with Note Fox"
         />
-        <meta property="og:image" content="/image.jpeg" />
+        <meta
+          property="og:image"
+          content="https://notefox.vercel.app/image.jpeg"
+        />
         <meta name="twitter:title" content="Note Fox" />
         <meta
           name="twitter:description"
           content="SaaS for Note - Enhance your note-taking experience with Note Fox"
         />
-        <meta name="twitter:image" content="/image.jpeg" />
+        <meta
+          name="twitter:image"
+          content="https://notefox.vercel.app/image.jpeg"
+        />
       </head>
       <body
         className={`${inter.className} ${data?.colorScheme ?? "theme-blue"} `}
