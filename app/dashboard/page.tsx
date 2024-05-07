@@ -84,11 +84,11 @@ export default async function DashboardPage() {
           </div>
 
           <h2 className="mt-6 text-xl font-semibold">
-            You don't have any notes created
+            You dont have any notes created
           </h2>
           <p className="mb-8 mt-2 text-center text-sm leading-6 text-muted-foreground max-w-sm mx-auto">
-            You currently don't have any notes. Please create some to see them
-            here.
+            You currently dont have any notes. please create some so that you
+            can see them right here.
           </p>
 
           {data?.Subscription?.status === "active" ? (
