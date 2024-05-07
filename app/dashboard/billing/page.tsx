@@ -1,4 +1,3 @@
-import prisma from "@/app/lib/db";
 import {
   Card,
   CardContent,
@@ -7,6 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CheckCircle2 } from "lucide-react";
+import prisma from "@/app/lib/db";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { getStripeSession, stripe } from "@/app/lib/stripe";
 import { redirect } from "next/navigation";
@@ -14,12 +14,9 @@ import {
   StripePortal,
   StripeSubscriptionCreationButton,
 } from "@/app/components/Submitbuttons";
+import { unstable_noStore as noStore } from "next/cache";
 
-interface FeatureItem {
-  name: string;
-}
-
-const featuresItems: FeatureItem[] = [
+const featureItems = [
   { name: "Unlimited Notes" },
   { name: "Priority Customer Support" },
   { name: "Ad-Free Experience" },
@@ -27,6 +24,7 @@ const featuresItems: FeatureItem[] = [
 ];
 
 async function getData(userId: string) {
+  noStore();
   const data = await prisma.subscription.findUnique({
     where: {
       userId: userId,
@@ -71,7 +69,7 @@ export default async function BillingPage() {
         process.env.NODE_ENV == "production"
           ? (process.env.PRODUCTION_URL as string)
           : "http://localhost:3000",
-      priceId: process.env.PRICE_ID as string,
+      priceId: process.env.STRIPE_PRICE_ID as string,
     });
 
     return redirect(subscriptionUrl);
@@ -89,6 +87,7 @@ export default async function BillingPage() {
 
     return redirect(session.url);
   }
+
   if (data?.status === "active") {
     return (
       <div className="grid items-start gap-8">
@@ -96,7 +95,7 @@ export default async function BillingPage() {
           <div className="grid gap-1">
             <h1 className="text-3xl md:text-4xl ">Subscription</h1>
             <p className="text-lg text-muted-foreground">
-              Settings regarding your subscription
+              Settings reagding your subscription
             </p>
           </div>
         </div>
@@ -131,26 +130,20 @@ export default async function BillingPage() {
           </div>
 
           <div className="mt-4 flex items-baseline text-6xl font-extrabold">
-            $30
-            <span className="ml-1 text-2xl text-muted-foreground">/ month</span>
+            $30 <span className="ml-1 text-2xl text-muted-foreground">/mo</span>
           </div>
-
           <p className="mt-5 text-lg text-muted-foreground">
-            Write unlimited notes for $30 a month.
+            Write as many notes as you want for $30 a Month
           </p>
         </CardContent>
-
-        <div className="flex-1 flex-col justify-between px-6 pb-8 bg-secondary rounded-lg m-1 space-y-6 sm:p-10 sm:pt-6">
-          <ul className="mt-4 sm:mt-0 space-y-4">
-            {featuresItems.map((item, index) => (
-              <li
-                key={index}
-                className="flex items-start sm:items-center space-x-3 sm:space-x-4"
-              >
-                <CheckCircle2 className="h-6 w-6 text-green-500" />
-                <p className="text-base leading-snug sm:leading-normal">
-                  {item.name}
-                </p>
+        <div className="flex-1 flex flex-col justify-between px-6 pt-6 pb-8 bg-secondary rounded-lg m-1 space-y-6 sm:p-10 sm:pt-6">
+          <ul className="space-y-4">
+            {featureItems.map((item, index) => (
+              <li key={index} className="flex items-center">
+                <div className="flex-shrink-0">
+                  <CheckCircle2 className="h-6 w-6 text-green-500" />
+                </div>
+                <p className="ml-3 text-base">{item.name}</p>
               </li>
             ))}
           </ul>
