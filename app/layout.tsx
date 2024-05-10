@@ -6,6 +6,7 @@ import { Navbar } from "./components/Navbar";
 import prisma from "./lib/db";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import AnalyticsWrapper from "./components/AnalyticsWrapper";
+import NextTopLoader from "nextjs-toploader";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -68,6 +69,31 @@ async function getData(userId: string) {
   }
 }
 
+function getShadowFromColor(colors: any) {
+  return `0 0 10px ${colors}, 0 0 5px ${colors}`;
+}
+
+function getTopLoaderColor(colorSch: any) {
+  switch (colorSch) {
+    case "theme-green":
+      return "#28a745";
+    case "theme-blue":
+      return "#2299DD";
+    case "theme-violet":
+      return "#6f42c1";
+    case "theme-yellow":
+      return "#ffc107";
+    case "theme-orange":
+      return "#fd7e14";
+    case "theme-red":
+      return "#dc3545";
+    case "theme-rose":
+      return "#e83e8c";
+    default:
+      return "#2299DD";
+  }
+}
+
 export default async function RootLayout({
   children,
 }: {
@@ -76,6 +102,8 @@ export default async function RootLayout({
   const { getUser } = getKindeServerSession();
   const user = await getUser();
   const data = await getData(user?.id as string);
+  const topLoaderColor = getTopLoaderColor(data?.colorScheme);
+  const topLoaderShadow = getShadowFromColor(topLoaderColor);
   return (
     <html lang="en">
       <head>
@@ -124,6 +152,18 @@ export default async function RootLayout({
       <body
         className={`${inter.className} ${data?.colorScheme ?? "theme-blue"} `}
       >
+        <NextTopLoader
+          color={topLoaderColor}
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+          shadow={topLoaderShadow}
+        />
+
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -131,6 +171,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <Navbar />
+
           {children}
           <AnalyticsWrapper />
         </ThemeProvider>

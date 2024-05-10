@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Loader2, Trash } from "lucide-react";
+import { Loader2, Pin, PinOff, Trash } from "lucide-react";
 import { useFormStatus } from "react-dom";
 
 export function SubmitButton() {
@@ -56,6 +56,36 @@ export function StripePortal() {
           View payment details
         </Button>
       )}
+    </>
+  );
+}
+
+interface PinButtonProps {
+  isPinned: boolean;
+}
+
+export function PinButton({ isPinned }: PinButtonProps) {
+  return (
+    <>
+      <Button size="icon" type="submit" variant="outline">
+        {isPinned ? (
+          <PinOff
+            style={{
+              transform: "rotate(45deg)",
+              width: "16px",
+              height: "16px",
+            }}
+          />
+        ) : (
+          <Pin
+            style={{
+              transform: "rotate(45deg)",
+              width: "16px",
+              height: "16px",
+            }}
+          />
+        )}
+      </Button>
     </>
   );
 }

@@ -570,3 +570,9 @@
     background-color: hsl(var(--accent));
   }
 }
+
+@media (max-width: 431px) {
+  #uniqueDiv {
+    column-gap: 0.5rem;
+  }
+}

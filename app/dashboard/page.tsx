@@ -5,7 +5,7 @@ import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { Edit, File, Trash } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
-import { TrashDelete } from "../components/Submitbuttons";
+import { PinButton, TrashDelete } from "../components/Submitbuttons";
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 
 async function getData(userId: string) {
@@ -21,10 +21,9 @@ async function getData(userId: string) {
           id: true,
           description: true,
           createdAt: true,
+          pinned: true,
         },
-        orderBy: {
-          createdAt: "desc",
-        },
+        orderBy: [{ pinned: "desc" }, { createdAt: "desc" }],
       },
 
       Subscription: {
@@ -56,6 +55,27 @@ export default async function DashboardPage() {
 
     revalidatePath("/dashboard");
   }
+
+  async function pinNote(formData: FormData) {
+    "use server";
+
+    const noteId = formData.get("noteId") as string;
+
+    const currentNote = await prisma.note.findUnique({
+      where: { id: noteId },
+      select: { pinned: true },
+    });
+
+    const newPinnedStatus = !currentNote?.pinned;
+
+    await prisma.note.update({
+      where: { id: noteId },
+      data: { pinned: newPinnedStatus },
+    });
+
+    revalidatePath("/dashboard");
+  }
+
   return (
     <div className="grid gap-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-2 space-y-4 sm:space-y-0">
@@ -123,7 +143,11 @@ export default async function DashboardPage() {
                   </p>
                 </div>
               </Link>
-              <div className="flex gap-x-4">
+              <div id="uniqueDiv" className="flex gap-x-4">
+                <form action={pinNote}>
+                  <input type="hidden" name="noteId" value={item.id} />
+                  <PinButton isPinned={item.pinned} />
+                </form>
                 <Link href={`/dashboard/new/${item.id}`}>
                   <Button variant="outline" size="icon" aria-label="Edit note">
                     <Edit className="w-4 h-4" />
