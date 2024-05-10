@@ -54,7 +54,7 @@ export default async function DashboardPage() {
       },
     });
 
-    revalidatePath("/dasboard");
+    revalidatePath("/dashboard");
   }
   return (
     <div className="grid gap-y-8">
@@ -111,17 +111,18 @@ export default async function DashboardPage() {
               key={item.id}
               className="flex items-center justify-between p-4"
             >
-              <div>
-                <h2 className="font-semibold text-xl text-primary">
-                  {item.title}
-                </h2>
-                <p>
-                  {new Intl.DateTimeFormat("en-US", {
-                    dateStyle: "full",
-                  }).format(new Date(item.createdAt))}
-                </p>
-              </div>
-
+              <Link href={`/dashboard/show/${item.id}`} className="w-full">
+                <div>
+                  <h2 className="font-semibold text-xl text-primary">
+                    {item.title}
+                  </h2>
+                  <p>
+                    {new Intl.DateTimeFormat("en-US", {
+                      dateStyle: "full",
+                    }).format(new Date(item.createdAt))}
+                  </p>
+                </div>
+              </Link>
               <div className="flex gap-x-4">
                 <Link href={`/dashboard/new/${item.id}`}>
                   <Button variant="outline" size="icon" aria-label="Edit note">
