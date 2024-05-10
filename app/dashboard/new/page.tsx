@@ -107,7 +107,7 @@ export default async function NewNoteRoute() {
               id="description"
               placeholder="Describe your note"
               required
-              className="w-full"
+              className="w-full h-[32vh] p-4"
             />
           </div>
         </CardContent>

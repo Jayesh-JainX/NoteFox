@@ -93,6 +93,7 @@ export default async function DynamicRoute({
               placeholder="Describe your note as you want"
               required
               defaultValue={data?.description}
+              className="w-full h-[32vh] p-4"
             />
           </div>
         </CardContent>
