@@ -80,45 +80,47 @@ export default async function NewNoteRoute() {
   }
 
   return (
-    <Card>
-      <form action={postData}>
-        <CardHeader>
-          <CardTitle>New Note</CardTitle>
-          <CardDescription>Create your new note here</CardDescription>
-        </CardHeader>
+    <div className="pt-[10vh]">
+      <Card>
+        <form action={postData}>
+          <CardHeader>
+            <CardTitle>New Note</CardTitle>
+            <CardDescription>Create your new note here</CardDescription>
+          </CardHeader>
 
-        <CardContent className="flex flex-col gap-y-4">
-          <div className="flex flex-col gap-y-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              required
-              type="text"
-              name="title"
-              id="title"
-              placeholder="Title for your note"
-              className="w-full"
-            />
-          </div>
+          <CardContent className="flex flex-col gap-y-4">
+            <div className="flex flex-col gap-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                required
+                type="text"
+                name="title"
+                id="title"
+                placeholder="Title for your note"
+                className="w-full"
+              />
+            </div>
 
-          <div className="flex flex-col gap-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              name="description"
-              id="description"
-              placeholder="Describe your note"
-              required
-              className="w-full h-[32vh] p-4"
-            />
-          </div>
-        </CardContent>
+            <div className="flex flex-col gap-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                name="description"
+                id="description"
+                placeholder="Describe your note"
+                required
+                className="w-full h-[32vh] p-4"
+              />
+            </div>
+          </CardContent>
 
-        <CardFooter className="flex justify-between space-x-4">
-          <Button asChild variant="destructive">
-            <Link href="/dashboard">Cancel</Link>
-          </Button>
-          <SubmitButton />
-        </CardFooter>
-      </form>
-    </Card>
+          <CardFooter className="flex justify-between space-x-4">
+            <Button asChild variant="destructive">
+              <Link href="/dashboard">Cancel</Link>
+            </Button>
+            <SubmitButton />
+          </CardFooter>
+        </form>
+      </Card>
+    </div>
   );
 }

@@ -68,43 +68,45 @@ export default async function DynamicRoute({
   }
 
   return (
-    <Card>
-      <form action={postData}>
-        <CardHeader>
-          <CardTitle>Edit Note</CardTitle>
-          <CardDescription>Edit your notes here.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-y-5">
-          <div className="gap-y-2 flex flex-col">
-            <Label>Title</Label>
-            <Input
-              required
-              type="text"
-              name="title"
-              placeholder="Title for your note"
-              defaultValue={data?.title}
-            />
-          </div>
+    <div className="pt-[10vh]">
+      <Card>
+        <form action={postData}>
+          <CardHeader>
+            <CardTitle>Edit Note</CardTitle>
+            <CardDescription>Edit your notes here.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-y-5">
+            <div className="gap-y-2 flex flex-col">
+              <Label>Title</Label>
+              <Input
+                required
+                type="text"
+                name="title"
+                placeholder="Title for your note"
+                defaultValue={data?.title}
+              />
+            </div>
 
-          <div className="flex flex-col gap-y-2">
-            <Label>Description</Label>
-            <Textarea
-              name="description"
-              placeholder="Describe your note as you want"
-              required
-              defaultValue={data?.description}
-              className="w-full h-[32vh] p-4"
-            />
-          </div>
-        </CardContent>
+            <div className="flex flex-col gap-y-2">
+              <Label>Description</Label>
+              <Textarea
+                name="description"
+                placeholder="Describe your note as you want"
+                required
+                defaultValue={data?.description}
+                className="w-full h-[32vh] p-4"
+              />
+            </div>
+          </CardContent>
 
-        <CardFooter className="flex justify-between">
-          <Button asChild variant="destructive">
-            <Link href="/dashboard">Cancel</Link>
-          </Button>
-          <SubmitButton />
-        </CardFooter>
-      </form>
-    </Card>
+          <CardFooter className="flex justify-between">
+            <Button asChild variant="destructive">
+              <Link href="/dashboard">Cancel</Link>
+            </Button>
+            <SubmitButton />
+          </CardFooter>
+        </form>
+      </Card>
+    </div>
   );
 }

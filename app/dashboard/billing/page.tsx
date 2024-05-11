@@ -90,7 +90,7 @@ export default async function BillingPage() {
 
   if (data?.status === "active") {
     return (
-      <div className="grid items-start gap-8">
+      <div className="grid items-start gap-8 ">
         <div className="flex items-center justify-between px-2">
           <div className="grid gap-1">
             <h1 className="text-3xl md:text-4xl ">Subscription</h1>
@@ -120,7 +120,7 @@ export default async function BillingPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto space-y-4">
+    <div className="max-w-md mx-auto space-y-4 pt-[10vh]">
       <Card className="flex flex-col">
         <CardContent className="py-8">
           <div>

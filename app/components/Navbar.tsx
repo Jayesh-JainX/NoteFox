@@ -12,7 +12,7 @@ export async function Navbar() {
   const { isAuthenticated, getUser } = getKindeServerSession();
   const user = await getUser();
   return (
-    <nav className="border-b bg-background h-[10vh] flex items-center">
+    <nav className="border-b bg-background h-[10vh] flex items-center fixed top-0 left-0 right-0 z-50">
       <div className="container flex items-center justify-between">
         <Link href="/">
           <h1 className="font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl">

@@ -45,38 +45,39 @@ export default async function DynamicRoute({
   const { getUser } = getKindeServerSession();
   const user = await getUser();
 
-  // Fetch data for the specified note
   const data = await fetchNoteData({
     userId: user?.id as string,
     noteId: params.id,
   });
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Note Details</CardTitle>
-        <CardDescription>Review the details of your note</CardDescription>
-      </CardHeader>
+    <div className="pt-[10vh]">
+      <Card>
+        <CardHeader>
+          <CardTitle>Note Details</CardTitle>
+          <CardDescription>Review the details of your note</CardDescription>
+        </CardHeader>
 
-      <CardContent className="flex flex-col gap-y-5">
-        <div className="gap-y-2 flex flex-col">
-          <span>
-            <Label className="font-bold">Title: </Label>
-            {data?.title}{" "}
-          </span>
-        </div>
+        <CardContent className="flex flex-col gap-y-5">
+          <div className="gap-y-2 flex flex-col">
+            <span>
+              <Label className="font-bold">Title: </Label>
+              {data?.title}{" "}
+            </span>
+          </div>
 
-        <div className="gap-y-2 flex flex-col">
-          <Label className="font-bold">Description:</Label>
-          <p>{data?.description}</p>
-        </div>
-      </CardContent>
+          <div className="gap-y-2 flex flex-col">
+            <Label className="font-bold">Description:</Label>
+            <p>{data?.description}</p>
+          </div>
+        </CardContent>
 
-      <CardFooter className="flex justify-between">
-        <Button asChild variant="secondary">
-          <Link href="/dashboard">&larr; Back</Link>
-        </Button>
-      </CardFooter>
-    </Card>
+        <CardFooter className="flex justify-between">
+          <Button asChild variant="secondary">
+            <Link href="/dashboard">&larr; Back</Link>
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }
