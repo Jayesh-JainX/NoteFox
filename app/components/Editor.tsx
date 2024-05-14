@@ -21,11 +21,9 @@ import { useCallback } from "react";
 function MenuBar() {
   const { editor } = useCurrentEditor();
 
-  if (!editor) {
-    return null;
-  }
+  const setLink = () => {
+    if (!editor) return;
 
-  const setLink = useCallback(() => {
     const previousUrl = editor.getAttributes("link").href;
     const url = window.prompt("URL", previousUrl);
 
@@ -40,7 +38,7 @@ function MenuBar() {
     }
 
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
-  }, [editor]);
+  };
 
   if (!editor) {
     return null;
