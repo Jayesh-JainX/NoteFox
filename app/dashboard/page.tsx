@@ -137,7 +137,7 @@ export default async function DashboardPage() {
                     {item.title}
                   </h2>
                   <p>
-                    {new Intl.DateTimeFormat(navigator.language, {
+                    {new Intl.DateTimeFormat("en-US", {
                       dateStyle: "full",
                     }).format(new Date(item.createdAt))}
                   </p>
