@@ -16,6 +16,9 @@ import prisma from "@/app/lib/db";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
+import { RichTextEditor } from "@/app/components/Editor";
+
+let desc = "";
 
 async function getData({ userId, noteId }: { userId: string; noteId: string }) {
   noStore();
@@ -42,6 +45,7 @@ export default async function DynamicRoute({
   const { getUser } = getKindeServerSession();
   const user = await getUser();
   const data = await getData({ userId: user?.id as string, noteId: params.id });
+  desc = data?.description ?? "";
 
   async function postData(formData: FormData) {
     "use server";
@@ -49,7 +53,6 @@ export default async function DynamicRoute({
     if (!user) throw new Error("you are not allowed");
 
     const title = formData.get("title") as string;
-    const description = formData.get("description") as string;
 
     await prisma.note.update({
       where: {
@@ -57,7 +60,7 @@ export default async function DynamicRoute({
         userId: user.id,
       },
       data: {
-        description: description,
+        description: desc,
         title: title,
       },
     });
@@ -65,6 +68,11 @@ export default async function DynamicRoute({
     revalidatePath("/dashboard");
 
     return redirect("/dashboard");
+  }
+
+  async function handleDescriptionUpdate(description: string) {
+    "use server";
+    desc = description;
   }
 
   return (
@@ -89,12 +97,16 @@ export default async function DynamicRoute({
 
             <div className="flex flex-col gap-y-2">
               <Label>Description</Label>
-              <Textarea
+              {/* <Textarea
                 name="description"
                 placeholder="Describe your note as you want"
                 required
                 defaultValue={data?.description}
                 className="w-full h-[32vh] p-4"
+              /> */}
+              <RichTextEditor
+                content={data?.description ?? ""}
+                setDescription={handleDescriptionUpdate}
               />
             </div>
           </CardContent>

@@ -12,6 +12,7 @@ import prisma from "@/app/lib/db";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { unstable_noStore as noStore } from "next/cache";
 import { Label } from "@/components/ui/label";
+import { Key } from "react";
 
 async function fetchNoteData({
   userId,
@@ -21,7 +22,6 @@ async function fetchNoteData({
   noteId: string;
 }) {
   noStore();
-  // Retrieve the note data for the specified user and note ID
   const noteData = await prisma.note.findUnique({
     where: {
       id: noteId,
@@ -51,7 +51,7 @@ export default async function DynamicRoute({
   });
 
   return (
-    <div className="pt-[10vh]">
+    <div className="pt-[10vh] pb-[10vh]">
       <Card>
         <CardHeader>
           <CardTitle>Note Details</CardTitle>
@@ -59,16 +59,24 @@ export default async function DynamicRoute({
         </CardHeader>
 
         <CardContent className="flex flex-col gap-y-5">
-          <div className="gap-y-2 flex flex-col">
+          <div className="gap-y-2 flex flex-col ">
             <span>
-              <Label className="font-bold">Title: </Label>
+              <Label className="font-bold text-lg">Title: </Label>
               {data?.title}{" "}
             </span>
           </div>
 
-          <div className="gap-y-2 flex flex-col">
-            <Label className="font-bold">Description:</Label>
-            <p>{data?.description}</p>
+          <div className="gap-y-2 flex flex-col border p-4 rounded">
+            {data?.description &&
+              data.description
+                .replace(/<p><\/p>/g, "<br>")
+                .split(/\n{2,}/)
+                .map((paragraph: any, index: Key | null | undefined) => (
+                  <div
+                    key={index}
+                    dangerouslySetInnerHTML={{ __html: paragraph }}
+                  />
+                ))}
           </div>
         </CardContent>
 

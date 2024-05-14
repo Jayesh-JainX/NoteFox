@@ -16,6 +16,9 @@ import prisma from "@/app/lib/db";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 import { unstable_noStore as noStore } from "next/cache";
+import { RichTextEditor } from "@/app/components/Editor";
+
+let desc: string | null = null;
 
 async function getData({ userId }: { userId: string }) {
   noStore();
@@ -58,6 +61,11 @@ export default async function NewNoteRoute() {
     return redirect("/dashboard/billing");
   }
 
+  async function handleDescriptionUpdate(description: string) {
+    "use server";
+    desc = description;
+  }
+
   async function postData(formData: FormData) {
     "use server";
 
@@ -66,12 +74,19 @@ export default async function NewNoteRoute() {
     }
 
     const title = formData.get("title") as string;
-    const description = formData.get("description") as string;
+
+    if (!title) {
+      return;
+    }
+
+    if (!desc || desc == null) {
+      return;
+    }
 
     await prisma.note.create({
       data: {
         userId: user?.id,
-        description: description,
+        description: desc ?? "",
         title: title,
       },
     });
@@ -103,12 +118,16 @@ export default async function NewNoteRoute() {
 
             <div className="flex flex-col gap-y-2">
               <Label htmlFor="description">Description</Label>
-              <Textarea
+              {/* <Textarea
                 name="description"
                 id="description"
                 placeholder="Describe your note"
                 required
                 className="w-full h-[32vh] p-4"
+              /> */}
+              <RichTextEditor
+                content=""
+                setDescription={handleDescriptionUpdate}
               />
             </div>
           </CardContent>

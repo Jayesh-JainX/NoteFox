@@ -77,7 +77,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="grid gap-y-8 pt-[10vh]">
+    <div className="grid gap-y-8 pt-[10vh] pb-[10vh]">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-2 space-y-4 sm:space-y-0">
         <div className="space-y-1">
           <h1 className="text-2xl sm:text-3xl md:text-4xl">Your Notes</h1>

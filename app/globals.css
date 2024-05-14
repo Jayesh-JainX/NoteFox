@@ -576,3 +576,32 @@
     column-gap: 0.5rem;
   }
 }
+
+.ProseMirror {
+  height: 36vh;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  border-radius: var(--radius);
+  padding: 10px;
+}
+
+.ProseMirror {
+  @apply rounded-lg border bg-card text-card-foreground shadow-sm;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  font-size: 15px !important;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  @apply text-sm text-muted-foreground;
+}
+
+.ProseMirror:focus {
+  @apply outline-none border-2 border-primary; /* Remove the default outline and apply border styles */
+  size: 0; /* Optionally, add a box shadow for focus */
+}
