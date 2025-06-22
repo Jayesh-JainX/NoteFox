@@ -1,8 +1,9 @@
+// dashboard/page.tsx
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import supabase from "../lib/db";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { Edit, File, Trash, Pin, PinOff } from "lucide-react";
+import { Edit, File, Pin } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { PinButton, TrashDelete } from "../components/Submitbuttons";
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
@@ -10,7 +11,6 @@ import { redirect } from "next/navigation";
 
 async function getData(userId: string) {
   try {
-    console.log("Fetching data for user ID:", userId);
     noStore();
 
     if (!userId) {
@@ -26,8 +26,6 @@ async function getData(userId: string) {
       .order("pinned", { ascending: false })
       .order("created_at", { ascending: false });
 
-    console.log("Notes query result:", { notes, notesError });
-
     if (notesError) {
       console.error("Error fetching notes:", notesError);
     }
@@ -37,12 +35,7 @@ async function getData(userId: string) {
       .from("subscriptions")
       .select("status")
       .eq("user_id", userId)
-      .maybeSingle(); // Use maybeSingle() instead of single() to handle no results
-
-    console.log("Subscription query result:", {
-      subscription,
-      subscriptionError,
-    });
+      .maybeSingle();
 
     if (subscriptionError) {
       console.error("Error fetching subscription:", subscriptionError);
@@ -58,29 +51,64 @@ async function getData(userId: string) {
   }
 }
 
-async function deleteNote(formData: FormData) {
+async function moveToRecycleBin(formData: FormData) {
   "use server";
 
   try {
     const noteId = formData.get("noteId") as string;
-    console.log("Deleting note with ID:", noteId);
 
     if (!noteId) {
       console.error("No note ID provided for deletion");
       return;
     }
 
-    const { error } = await supabase.from("notes").delete().eq("id", noteId);
+    // Get the note data first
+    const { data: note, error: fetchError } = await supabase
+      .from("notes")
+      .select("*")
+      .eq("id", noteId)
+      .single();
 
-    if (error) {
-      console.error("Error deleting note:", error);
+    if (fetchError || !note) {
+      console.error("Error fetching note:", fetchError);
       return;
     }
 
-    console.log("Note deleted successfully");
+    // Insert into recycle bin
+    const { error: insertError } = await supabase.from("recycle_bin").insert([
+      {
+        id: note.id,
+        title: note.title,
+        description: note.description,
+        created_at: note.created_at,
+        updated_at: note.updated_at,
+        user_id: note.user_id,
+        pinned: note.pinned,
+        original_note_id: note.id,
+      },
+    ]);
+
+    if (insertError) {
+      console.error("Error moving to recycle bin:", insertError);
+      return;
+    }
+
+    // Delete from notes table
+    const { error: deleteError } = await supabase
+      .from("notes")
+      .delete()
+      .eq("id", noteId);
+
+    if (deleteError) {
+      console.error("Error deleting note:", deleteError);
+      // If delete fails, remove from recycle bin to maintain consistency
+      await supabase.from("recycle_bin").delete().eq("id", noteId);
+      return;
+    }
+
     revalidatePath("/dashboard");
   } catch (error) {
-    console.error("Error in deleteNote function:", error);
+    console.error("Error in moveToRecycleBin function:", error);
   }
 }
 
@@ -89,7 +117,6 @@ async function pinNote(formData: FormData) {
 
   try {
     const noteId = formData.get("noteId") as string;
-    console.log("Toggling pin for note ID:", noteId);
 
     if (!noteId) {
       console.error("No note ID provided for pinning");
@@ -109,7 +136,6 @@ async function pinNote(formData: FormData) {
     }
 
     const newPinnedStatus = !currentNote?.pinned;
-    console.log("Updating pin status to:", newPinnedStatus);
 
     // Update pin status
     const { error: updateError } = await supabase
@@ -122,7 +148,6 @@ async function pinNote(formData: FormData) {
       return;
     }
 
-    console.log("Pin status updated successfully");
     revalidatePath("/dashboard");
   } catch (error) {
     console.error("Error in pinNote function:", error);
@@ -134,17 +159,11 @@ export default async function DashboardPage() {
     const { getUser } = getKindeServerSession();
     const user = await getUser();
 
-    console.log("Dashboard - Current user:", user);
-
     if (!user || !user.id) {
-      console.log("No user found in dashboard, redirecting");
       return redirect("/");
     }
 
-    console.log("Fetching data for user ID:", user.id);
     const data = await getData(user.id);
-
-    console.log("Dashboard data:", data);
 
     // Show loading state if data is still being fetched
     if (!data) {
@@ -283,7 +302,7 @@ export default async function DashboardPage() {
                     </Button>
                   </Link>
 
-                  <form action={deleteNote}>
+                  <form action={moveToRecycleBin}>
                     <input type="hidden" name="noteId" value={item.id} />
                     <TrashDelete />
                   </form>

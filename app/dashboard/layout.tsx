@@ -19,18 +19,13 @@ async function getData({
   profileImage: string | undefined | null;
 }) {
   try {
-    console.log("Checking user in database with ID:", id);
-
     const { data: user, error } = await supabase
       .from("users")
       .select("id, stripe_customer_id")
       .eq("id", id)
       .single();
 
-    console.log("User query result:", { user, error });
-
     if (!user || error) {
-      console.log("User not found, creating new user...");
       const name = `${firstName ?? ""} ${lastName ?? ""}`.trim();
 
       const { data: newUser, error: createError } = await supabase
@@ -49,8 +44,6 @@ async function getData({
         console.error("Error creating user:", createError);
         throw new Error("Failed to create user");
       }
-
-      console.log("New user created:", newUser);
 
       // Create Stripe customer for new user
       const stripeCustomer = await stripe.customers.create({
@@ -72,7 +65,6 @@ async function getData({
 
     // If user exists but doesn't have Stripe customer ID
     if (!user.stripe_customer_id) {
-      console.log("Creating Stripe customer for existing user...");
       const name = `${firstName ?? ""} ${lastName ?? ""}`.trim();
 
       const stripeCustomer = await stripe.customers.create({
@@ -106,10 +98,7 @@ export default async function DashboardLayout({
     const { getUser } = getKindeServerSession();
     const user = await getUser();
 
-    console.log("Authenticated user:", user);
-
     if (!user || !user.id) {
-      console.log("No authenticated user found, redirecting to home");
       return redirect("/");
     }
 
