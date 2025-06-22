@@ -226,8 +226,8 @@ export default async function RecycleBinPage() {
                 <div className="mt-2 text-sm text-amber-700 dark:text-amber-300">
                   <p>
                     Items in the recycle bin are automatically deleted after 30
-                    days. Restore important notes before they're permanently
-                    removed.
+                    days. Restore important notes before they&apos;re
+                    permanently removed.
                   </p>
                 </div>
               </div>
@@ -247,7 +247,7 @@ export default async function RecycleBinPage() {
             </h2>
             <p className="mb-8 mt-2 text-center text-sm leading-6 text-muted-foreground max-w-sm mx-auto">
               Deleted notes will appear here. You can restore them within 30
-              days before they're permanently deleted.
+              days before they&apos;re permanently deleted.
             </p>
 
             <Button asChild>
