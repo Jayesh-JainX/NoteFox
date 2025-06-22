@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import prisma from "@/app/lib/db";
+import supabase from "@/app/lib/db";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 
 import { SubmitButton } from "@/app/components/Submitbuttons";
@@ -25,18 +25,22 @@ import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 
 async function getData(userId: string) {
   noStore();
-  const data = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-    select: {
-      name: true,
-      email: true,
-      colorScheme: true,
-    },
-  });
+  const { data, error } = await supabase
+    .from("users")
+    .select("name, email, color_scheme")
+    .eq("id", userId)
+    .single();
 
-  return data;
+  if (error) {
+    console.error("Error fetching user data:", error);
+    return null;
+  }
+
+  return {
+    name: data?.name,
+    email: data?.email,
+    colorScheme: data?.color_scheme,
+  };
 }
 
 export default async function SettingPage() {
@@ -50,15 +54,13 @@ export default async function SettingPage() {
     const name = formData.get("name") as string;
     const colorScheme = formData.get("color") as string;
 
-    await prisma.user.update({
-      where: {
-        id: user?.id,
-      },
-      data: {
-        name: name ?? undefined,
-        colorScheme: colorScheme ?? undefined,
-      },
-    });
+    const { error } = await supabase
+      .from("users")
+      .update({
+        name: name || null,
+        color_scheme: colorScheme || null,
+      })
+      .eq("id", user?.id);
 
     revalidatePath("/", "layout");
   }

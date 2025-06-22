@@ -3,10 +3,12 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "./components/theme-provider";
 import { Navbar } from "./components/Navbar";
-import prisma from "./lib/db";
+import supabase from "./lib/db";
+
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import AnalyticsWrapper from "./components/AnalyticsWrapper";
 import NextTopLoader from "nextjs-toploader";
+import { Suspense } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -57,15 +59,18 @@ export const metadata: Metadata = {
 
 async function getData(userId: string) {
   if (userId) {
-    const data = await prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-      select: {
-        colorScheme: true,
-      },
-    });
-    return data;
+    const { data, error } = await supabase
+      .from("users")
+      .select("color_scheme")
+      .eq("id", userId)
+      .single();
+
+    if (error) {
+      console.error("Error fetching user color scheme:", error);
+      return null;
+    }
+
+    return { colorScheme: data?.color_scheme };
   }
 }
 
@@ -170,10 +175,15 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Navbar />
-
-          {children}
-          <AnalyticsWrapper />
+          <Suspense fallback={<div>Loading...</div>}>
+            <Navbar />
+          </Suspense>
+          <Suspense fallback={<div>Loading content...</div>}>
+            {children}
+          </Suspense>
+          <Suspense fallback={null}>
+            <AnalyticsWrapper />
+          </Suspense>
         </ThemeProvider>
       </body>
     </html>

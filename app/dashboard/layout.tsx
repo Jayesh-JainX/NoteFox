@@ -2,8 +2,9 @@ import { ReactNode } from "react";
 import { DashboardNav } from "../components/DashboardNav";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
-import prisma from "../lib/db";
+import supabase from "../lib/db";
 import { stripe } from "../lib/stripe";
+
 async function getData({
   email,
   id,
@@ -17,40 +18,82 @@ async function getData({
   lastName: string | undefined | null;
   profileImage: string | undefined | null;
 }) {
-  const user = await prisma.user.findUnique({
-    where: {
-      id: id,
-    },
-    select: {
-      id: true,
-      stripeCustomerId: true,
-    },
-  });
+  try {
+    console.log("Checking user in database with ID:", id);
 
-  if (!user) {
-    const name = `${firstName ?? ""} ${lastName ?? ""}`;
-    await prisma.user.create({
-      data: {
-        id: id,
+    const { data: user, error } = await supabase
+      .from("users")
+      .select("id, stripe_customer_id")
+      .eq("id", id)
+      .single();
+
+    console.log("User query result:", { user, error });
+
+    if (!user || error) {
+      console.log("User not found, creating new user...");
+      const name = `${firstName ?? ""} ${lastName ?? ""}`.trim();
+
+      const { data: newUser, error: createError } = await supabase
+        .from("users")
+        .insert([
+          {
+            id: id,
+            email: email,
+            name: name,
+          },
+        ])
+        .select()
+        .single();
+
+      if (createError) {
+        console.error("Error creating user:", createError);
+        throw new Error("Failed to create user");
+      }
+
+      console.log("New user created:", newUser);
+
+      // Create Stripe customer for new user
+      const stripeCustomer = await stripe.customers.create({
         email: email,
         name: name,
-      },
-    });
-  }
+      });
 
-  if (!user?.stripeCustomerId) {
-    const data = await stripe.customers.create({
-      email: email,
-    });
+      const { error: updateError } = await supabase
+        .from("users")
+        .update({ stripe_customer_id: stripeCustomer.id })
+        .eq("id", id);
 
-    await prisma.user.update({
-      where: {
-        id: id,
-      },
-      data: {
-        stripeCustomerId: data.id,
-      },
-    });
+      if (updateError) {
+        console.error("Error updating user with Stripe ID:", updateError);
+      }
+
+      return newUser;
+    }
+
+    // If user exists but doesn't have Stripe customer ID
+    if (!user.stripe_customer_id) {
+      console.log("Creating Stripe customer for existing user...");
+      const name = `${firstName ?? ""} ${lastName ?? ""}`.trim();
+
+      const stripeCustomer = await stripe.customers.create({
+        email: email,
+        name: name,
+      });
+
+      const { error: updateError } = await supabase
+        .from("users")
+        .update({ stripe_customer_id: stripeCustomer.id })
+        .eq("id", id);
+
+      if (updateError) {
+        console.error("Error updating user with Stripe ID:", updateError);
+      }
+    }
+
+    return user;
+  } catch (error) {
+    console.error("Error in getData function:", error);
+    throw error;
   }
 }
 
@@ -59,27 +102,37 @@ export default async function DashboardLayout({
 }: {
   children: ReactNode;
 }) {
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
-  if (!user) {
+  try {
+    const { getUser } = getKindeServerSession();
+    const user = await getUser();
+
+    console.log("Authenticated user:", user);
+
+    if (!user || !user.id) {
+      console.log("No authenticated user found, redirecting to home");
+      return redirect("/");
+    }
+
+    await getData({
+      email: user.email as string,
+      firstName: user.given_name,
+      id: user.id,
+      lastName: user.family_name,
+      profileImage: user.picture,
+    });
+
+    return (
+      <div className="flex flex-col space-y-6 mt-10">
+        <div className="container grid flex-1 gap-12 md:grid-cols-[200px_1fr]">
+          <aside className="hidden w-[200px] flex-col md:flex">
+            <DashboardNav />
+          </aside>
+          <main>{children}</main>
+        </div>
+      </div>
+    );
+  } catch (error) {
+    console.error("Error in DashboardLayout:", error);
     return redirect("/");
   }
-
-  await getData({
-    email: user.email as string,
-    firstName: user.given_name as string,
-    id: user.id as string,
-    lastName: user.family_name as string,
-    profileImage: user.picture,
-  });
-  return (
-    <div className="flex flex-col space-y-6 mt-10">
-      <div className="container grid flex-1 gap-12 md:grid-cols-[200px_1fr]">
-        <aside className="hidden w-[200px] flex-col md:flex">
-          <DashboardNav />
-        </aside>
-        <main>{children}</main>
-      </div>
-    </div>
-  );
 }

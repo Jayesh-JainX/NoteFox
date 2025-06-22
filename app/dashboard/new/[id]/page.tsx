@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
-import prisma from "@/app/lib/db";
+import supabase from "@/app/lib/db";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 import { revalidatePath, unstable_noStore as noStore } from "next/cache";
@@ -22,17 +22,17 @@ let desc = "";
 
 async function getData({ userId, noteId }: { userId: string; noteId: string }) {
   noStore();
-  const data = await prisma.note.findUnique({
-    where: {
-      id: noteId,
-      userId: userId,
-    },
-    select: {
-      title: true,
-      description: true,
-      id: true,
-    },
-  });
+  const { data, error } = await supabase
+    .from("notes")
+    .select("title, description, id")
+    .eq("id", noteId)
+    .eq("user_id", userId)
+    .single();
+
+  if (error) {
+    console.error("Error fetching note:", error);
+    return null;
+  }
 
   return data;
 }
@@ -54,17 +54,20 @@ export default async function DynamicRoute({
 
     const title = formData.get("title") as string;
 
-    await prisma.note.update({
-      where: {
-        id: data?.id,
-        userId: user.id,
-      },
-      data: {
+    const { error } = await supabase
+      .from("notes")
+      .update({
         description: desc,
         title: title,
-      },
-    });
+      })
+      .eq("id", data?.id)
+      .eq("user_id", user.id);
+    if (error) {
+      console.error("Error updating note:", error);
+      return null;
+    }
 
+    // Revalidate the cache for the dashboard page
     revalidatePath("/dashboard");
 
     return redirect("/dashboard");

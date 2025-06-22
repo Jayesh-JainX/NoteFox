@@ -16,7 +16,6 @@ import React from "react";
 import Underline from "@tiptap/extension-underline";
 import Highlight from "@tiptap/extension-highlight";
 import Link from "@tiptap/extension-link";
-import { useCallback } from "react";
 
 function MenuBar() {
   const { editor } = useCurrentEditor();

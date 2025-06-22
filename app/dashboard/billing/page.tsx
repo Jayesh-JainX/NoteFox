@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CheckCircle2 } from "lucide-react";
-import prisma from "@/app/lib/db";
+import supabase from "@/app/lib/db";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { getStripeSession, stripe } from "@/app/lib/stripe";
 import { redirect } from "next/navigation";
@@ -25,21 +25,31 @@ const featureItems = [
 
 async function getData(userId: string) {
   noStore();
-  const data = await prisma.subscription.findUnique({
-    where: {
-      userId: userId,
-    },
-    select: {
-      status: true,
-      user: {
-        select: {
-          stripeCustomerId: true,
-        },
-      },
-    },
-  });
+  // Get subscription data
+  const { data: subscription, error: subscriptionError } = await supabase
+    .from("subscriptions")
+    .select("status")
+    .eq("user_id", userId)
+    .single();
 
-  return data;
+  // Get user's stripe customer ID
+  const { data: user, error: userError } = await supabase
+    .from("users")
+    .select("stripe_customer_id")
+    .eq("id", userId)
+    .single();
+
+  if (subscriptionError || userError) {
+    console.error("Error fetching data:", subscriptionError || userError);
+    return null;
+  }
+
+  return {
+    status: subscription?.status,
+    user: {
+      stripeCustomerId: user?.stripe_customer_id,
+    },
+  };
 }
 
 export default async function BillingPage() {
@@ -50,21 +60,18 @@ export default async function BillingPage() {
   async function createSubscription() {
     "use server";
 
-    const dbUser = await prisma.user.findUnique({
-      where: {
-        id: user?.id,
-      },
-      select: {
-        stripeCustomerId: true,
-      },
-    });
+    const { data: dbUser, error } = await supabase
+      .from("users")
+      .select("stripe_customer_id")
+      .eq("id", user?.id)
+      .single();
 
-    if (!dbUser?.stripeCustomerId) {
+    if (!dbUser?.stripe_customer_id) {
       throw new Error("Unable to get customer id");
     }
 
     const subscriptionUrl = await getStripeSession({
-      customerId: dbUser.stripeCustomerId,
+      customerId: dbUser.stripe_customer_id,
       domainUrl:
         process.env.NODE_ENV == "production"
           ? (process.env.PRODUCTION_URL as string)

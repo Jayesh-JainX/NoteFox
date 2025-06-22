@@ -1,7 +1,7 @@
 import { stripe } from "@/app/lib/stripe";
 import { headers } from "next/headers";
 import Stripe from "stripe";
-import prisma from "@/app/lib/db";
+import supabase from "@/app/lib/db";
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -28,25 +28,25 @@ export async function POST(req: Request) {
     );
     const customerId = String(session.customer);
 
-    const user = await prisma.user.findUnique({
-      where: {
-        stripeCustomerId: customerId,
-      },
-    });
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("stripe_customer_id", customerId)
+      .single();
 
-    if (!user) throw new Error("User not found...");
+    if (!user || userError) throw new Error("User not found...");
 
-    await prisma.subscription.create({
-      data: {
-        stripeSubscriptionId: subscription.id,
-        userId: user.id,
-        currentPeriodStart: subscription.current_period_start,
-        currentPeriodEnd: subscription.current_period_end,
+    const { error: subscriptionError } = await supabase
+      .from("subscriptions")
+      .insert({
+        stripe_subscription_id: subscription.id,
+        user_id: user.id,
+        current_period_start: subscription.current_period_start,
+        current_period_end: subscription.current_period_end,
         status: subscription.status,
-        planId: subscription.items.data[0].plan.id,
-        invterval: String(subscription.items.data[0].plan.interval),
-      },
-    });
+        plan_id: subscription.items.data[0].price.id,
+        interval: String(subscription.items.data[0].plan.interval),
+      });
   }
 
   if (event.type === "invoice.payment_succeeded") {
@@ -54,17 +54,15 @@ export async function POST(req: Request) {
       session.subscription as string
     );
 
-    await prisma.subscription.update({
-      where: {
-        stripeSubscriptionId: subscription.id,
-      },
-      data: {
-        planId: subscription.items.data[0].price.id,
-        currentPeriodStart: subscription.current_period_start,
-        currentPeriodEnd: subscription.current_period_end,
+    const { error } = await supabase
+      .from("subscriptions")
+      .update({
+        plan_id: subscription.items.data[0].price.id,
+        current_period_start: subscription.current_period_start,
+        current_period_end: subscription.current_period_end,
         status: subscription.status,
-      },
-    });
+      })
+      .eq("stripe_subscription_id", subscription.id);
   }
 
   return new Response(null, { status: 200 });

@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
-import prisma from "@/app/lib/db";
+import supabase from "@/app/lib/db";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 import { unstable_noStore as noStore } from "next/cache";
@@ -23,27 +23,22 @@ let desc: string | null = null;
 async function getData({ userId }: { userId: string }) {
   noStore();
 
-  const data = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-    select: {
-      Subscription: {
-        select: {
-          status: true,
-        },
-      },
-      Notes: {
-        select: {
-          id: true,
-        },
-      },
-    },
-  });
+  // Get subscription status
+  const { data: subscription } = await supabase
+    .from("subscriptions")
+    .select("status")
+    .eq("user_id", userId)
+    .single();
+
+  // Get notes count
+  const { count: notesCount } = await supabase
+    .from("notes")
+    .select("id", { count: "exact" })
+    .eq("user_id", userId);
 
   return {
-    SubscriptionStatus: data?.Subscription?.status,
-    NotesCount: data?.Notes.length,
+    SubscriptionStatus: subscription?.status,
+    NotesCount: notesCount || 0,
   };
 }
 
@@ -69,29 +64,46 @@ export default async function NewNoteRoute() {
   async function postData(formData: FormData) {
     "use server";
 
-    if (!user) {
-      throw new Error("Not authorized");
+    try {
+      if (!user) {
+        throw new Error("Not authorized");
+      }
+
+      const title = formData.get("title") as string;
+
+      if (!title) {
+        throw new Error("Title is required");
+      }
+
+      if (!desc) {
+        throw new Error("Description is required");
+      }
+
+      // Generate a UUID for the id field
+      const { data: insertData, error } = await supabase
+        .from("notes")
+        .insert({
+          id: crypto.randomUUID(), // Add this line to generate a UUID
+          user_id: user?.id,
+          description: desc,
+          title: title,
+          created_at: new Date().toISOString(), // Add timestamp if needed
+        })
+        .select();
+
+      if (error) {
+        console.error("Supabase error:", error);
+        throw new Error(`Failed to create note: ${error.message}`);
+      }
+
+      // Reset the description after successful insert
+      desc = null;
+
+      return redirect("/dashboard");
+    } catch (error) {
+      console.error("Error creating note:", error);
+      throw error;
     }
-
-    const title = formData.get("title") as string;
-
-    if (!title) {
-      return;
-    }
-
-    if (!desc || desc == null) {
-      return;
-    }
-
-    await prisma.note.create({
-      data: {
-        userId: user?.id,
-        description: desc ?? "",
-        title: title,
-      },
-    });
-
-    return redirect("/dashboard");
   }
 
   return (
@@ -118,13 +130,6 @@ export default async function NewNoteRoute() {
 
             <div className="flex flex-col gap-y-2">
               <Label htmlFor="description">Description</Label>
-              {/* <Textarea
-                name="description"
-                id="description"
-                placeholder="Describe your note"
-                required
-                className="w-full h-[32vh] p-4"
-              /> */}
               <RichTextEditor
                 content=""
                 setDescription={handleDescriptionUpdate}

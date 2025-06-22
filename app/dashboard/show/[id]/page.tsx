@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-import prisma from "@/app/lib/db";
+import supabase from "@/app/lib/db";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { unstable_noStore as noStore } from "next/cache";
 import { Label } from "@/components/ui/label";
@@ -22,17 +22,17 @@ async function fetchNoteData({
   noteId: string;
 }) {
   noStore();
-  const noteData = await prisma.note.findUnique({
-    where: {
-      id: noteId,
-      userId: userId,
-    },
-    select: {
-      title: true,
-      description: true,
-      id: true,
-    },
-  });
+  const { data: noteData, error } = await supabase
+    .from("notes")
+    .select("title, description, id")
+    .eq("id", noteId)
+    .eq("user_id", userId)
+    .single();
+
+  if (error) {
+    console.error("Error fetching note:", error);
+    return null;
+  }
 
   return noteData;
 }
